@@ -1,23 +1,24 @@
 import {prisma} from "../lib/prisma";
 
 export const getAllContracts = async(tenantId: number) => {
-    console.time("[Server] Get All Contracts - contracts-api")
+    console.time("[Server] Get All Contracts - contracts-api");
 
     const contracts = await prisma.contract.findMany({
         where: {
             tenantId,
         },
+        take: 1000,
         orderBy: {
             createdAt: "desc"
         }
-    })
+    });
 
     const response = []; 
 
     for(const contract of contracts){
         const createdBy = await prisma.user.findUnique({
             where: {
-                id: contract.id
+                id: contract.createdById
             }
         });
 
@@ -44,7 +45,7 @@ export const getAllContracts = async(tenantId: number) => {
         })
     }
 
-    console.timeEnd("[Server] Get All Contracts - contracts-api")
+    console.timeEnd("[Server] Get All Contracts - contracts-api");
 
     return response;
 }
