@@ -1,7 +1,10 @@
 import {prisma} from "../lib/prisma";
+import { resetQueryCount, getQueryCount } from "../utils/metrics";
 
 export const getAllContracts = async(tenantId: number) => {
-    console.time("[Server] Get All Contracts - contracts-api");
+    console.time("[Server] Get All Contracts - contracts-api")
+
+    resetQueryCount();
 
     const contracts = await prisma.contract.findMany({
         where: {
@@ -11,7 +14,7 @@ export const getAllContracts = async(tenantId: number) => {
         orderBy: {
             createdAt: "desc"
         }
-    });
+    })
 
     const response = []; 
 
@@ -45,7 +48,9 @@ export const getAllContracts = async(tenantId: number) => {
         })
     }
 
-    console.timeEnd("[Server] Get All Contracts - contracts-api");
+    console.timeEnd("[Server] Get All Contracts - contracts-api")
+
+    console.log("Total Queries:", getQueryCount());
 
     return response;
 }
