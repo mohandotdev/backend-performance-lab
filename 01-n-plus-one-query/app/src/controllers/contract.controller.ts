@@ -1,5 +1,7 @@
 import { Request,Response } from "express";
-import { getAllContracts } from "../services/contract.service";
+// import { getAllContracts } from "../services/broken/contract.service";
+import { getAllContracts } from "../services/optimized/contract.service";
+
 
 export const getContracts = async(req: Request,res: Response) => {
     try{

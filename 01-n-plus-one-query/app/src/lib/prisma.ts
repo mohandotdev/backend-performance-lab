@@ -8,7 +8,7 @@ const connectionString = `${process.env.DATABASE_URL}`;
 const adapter = new PrismaPg({connectionString});
 const prisma = new PrismaClient({
     adapter,
-    //log: ["query", "warn", "error"] # Enable Prisma query logging if wanted!
+    log: ["query", "warn", "error"] //Enable Prisma query logging if wanted!
 });
 
 export { prisma };
