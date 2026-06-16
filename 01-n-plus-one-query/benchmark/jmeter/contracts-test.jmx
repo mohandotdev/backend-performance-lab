@@ -74,7 +74,7 @@
               <connectTime>true</connectTime>
             </value>
           </objProp>
-          <stringProp name="filename">D:\Redemption\backend-performance-lab\01-n-plus-one-query\benchmark\jmeter\results.jtl</stringProp>
+          <stringProp name="filename">D:\Redemption\backend-performance-lab\01-n-plus-one-query\benchmark\jmeter\after-optimization-results.jtl</stringProp>
         </ResultCollector>
         <hashTree/>
       </hashTree>
