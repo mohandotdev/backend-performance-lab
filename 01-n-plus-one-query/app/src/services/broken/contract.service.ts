@@ -1,5 +1,5 @@
-import {prisma} from "../lib/prisma";
-import { resetQueryCount, getQueryCount } from "../utils/metrics";
+import {prisma} from "../../lib/prisma";
+import { resetQueryCount, getQueryCount } from "../../utils/metrics";
 
 export const getAllContracts = async(tenantId: number) => {
     console.time("[Server] Get All Contracts - contracts-api")
