@@ -47,6 +47,8 @@ model Contract {
   comments     Comment[]
 
   createdAt    DateTime    @default(now())
+
+  @@index([tenantId, createdAt(sort: Desc)])
 }
 
 model Approval {
