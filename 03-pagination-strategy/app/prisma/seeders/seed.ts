@@ -3,9 +3,10 @@ import { faker } from "@faker-js/faker";
 
 const TENANTS = 10;
 const USERS_PER_TENANT = 20;
-const CONTRACTS_PER_TENANT = 1000;
-const APPROVALS_PER_CONTRACT = 3;
-const COMMENTS_PER_CONTRACT = 5;
+const CONTRACTS_PER_TENANT = 100000;
+// const APPROVALS_PER_CONTRACT = 0;
+// const COMMENTS_PER_CONTRACT = 0;
+const BATCH_SIZE = 5000;
 
 async function main() {
   console.log("Cleaning database...");
@@ -57,82 +58,79 @@ async function main() {
     // CONTRACTS
     // --------------------------------------------------
 
-    const contractsData = Array.from(
-      { length: CONTRACTS_PER_TENANT },
-      () => ({
-        tenantId: tenant.id,
-        createdById:
-          users[Math.floor(Math.random() * users.length)].id,
-        name: faker.company.name() + " Agreement",
-        status: faker.helpers.arrayElement([
-          "DRAFT",
-          "PENDING",
-          "APPROVED",
-          "REJECTED",
-        ]),
-      })
-    );
+    for(let offset = 0; offset < CONTRACTS_PER_TENANT; offset+=BATCH_SIZE){
+      const contractsData = Array.from(
+        { length: Math.min(BATCH_SIZE, CONTRACTS_PER_TENANT - offset) },
+        () => ({
+          tenantId: tenant.id,
+          createdById:
+            users[Math.floor(Math.random() * users.length)].id,
+          name: faker.company.name() + " Agreement",
+          status: faker.helpers.arrayElement([
+            "DRAFT",
+            "PENDING",
+            "APPROVED",
+            "REJECTED",
+          ]),
+        })
+      );
 
-    await prisma.contract.createMany({
-      data: contractsData,
-    });
+      await prisma.contract.createMany({
+        data: contractsData,
+      });
 
-    const contracts = await prisma.contract.findMany({
-      where: {
-        tenantId: tenant.id,
-      },
-      select: {
-        id: true,
-      },
-    });
+      console.log(
+        `Tenant ${tenant.id}: ${offset + contractsData.length}/${CONTRACTS_PER_TENANT}`
+      );
+    }
 
     // --------------------------------------------------
     // APPROVALS
     // --------------------------------------------------
 
-    const approvalsData: any[] = [];
+    // const approvalsData: any[] = [];
 
-    for (const contract of contracts) {
-      for (let i = 0; i < APPROVALS_PER_CONTRACT; i++) {
-        approvalsData.push({
-          contractId: contract.id,
-          approverId:
-            users[Math.floor(Math.random() * users.length)].id,
-          status: faker.helpers.arrayElement([
-            "PENDING",
-            "APPROVED",
-            "REJECTED",
-          ]),
-        });
-      }
-    }
+    // for (const contract of contracts) {
+    //   for (let i = 0; i < APPROVALS_PER_CONTRACT; i++) {
+    //     approvalsData.push({
+    //       contractId: contract.id,
+    //       approverId:
+    //         users[Math.floor(Math.random() * users.length)].id,
+    //       status: faker.helpers.arrayElement([
+    //         "PENDING",
+    //         "APPROVED",
+    //         "REJECTED",
+    //       ]),
+    //     });
+    //   }
+    // }
 
-    await prisma.approval.createMany({
-      data: approvalsData,
-    });
+    // await prisma.approval.createMany({
+    //   data: approvalsData,
+    // });
 
     // --------------------------------------------------
     // COMMENTS
     // --------------------------------------------------
 
-    const commentsData: any[] = [];
+    // const commentsData: any[] = [];
 
-    for (const contract of contracts) {
-      for (let i = 0; i < COMMENTS_PER_CONTRACT; i++) {
-        commentsData.push({
-          contractId: contract.id,
-          message: faker.lorem.sentence(),
-        });
-      }
-    }
+    // for (const contract of contracts) {
+    //   for (let i = 0; i < COMMENTS_PER_CONTRACT; i++) {
+    //     commentsData.push({
+    //       contractId: contract.id,
+    //       message: faker.lorem.sentence(),
+    //     });
+    //   }
+    // }
 
-    await prisma.comment.createMany({
-      data: commentsData,
-    });
+    // await prisma.comment.createMany({
+    //   data: commentsData,
+    // });
 
-    console.log(
-      `Tenant ${tenant.id} seeded with ${contracts.length} contracts`
-    );
+    // console.log(
+    //   `Tenant ${tenant.id} seeded with ${contracts.length} contracts`
+    // );
   }
 
   console.log("\n Seeding completed!");
