@@ -32,6 +32,10 @@ export const getAllContracts = async(tenantId: number) => {
         }
     })
 
+    const used = process.memoryUsage().heapUsed;
+
+    console.log(`Memory usage: ${Math.round(used / 1024 / 1024)} MB`);
+
     console.timeEnd("[Server] Get All Contracts - contracts-api")
 
     console.log("Total Queries:", getQueryCount());
