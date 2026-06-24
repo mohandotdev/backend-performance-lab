@@ -2,9 +2,9 @@
 
 ## Incident Summary
 
-The contract listing endpoint exhibited poor response times under concurrent load despite previous optimizations addressing N+1 queries and database indexing.
+The contract listing endpoint exhibited poor performance despite previous optimizations addressing N+1 queries and database indexing.
 
-Users reported slow page loads when accessing contract listings for large tenants.
+Benchmarking revealed that the endpoint returned the entire dataset for a tenant in a single response.
 
 ---
 
@@ -14,118 +14,89 @@ Users reported slow page loads when accessing contract listings for large tenant
 GET /contracts?tenantId=1
 ```
 
----
+Dataset:
 
-## Initial Assumptions
-
-Potential causes considered:
-
-* N+1 query issue
-* Missing database indexes
-* Large dataset size
-* Network overhead
-* Serialization overhead
+```text
+Contracts per Tenant: 100,000
+Total Contracts: 1,000,000
+```
 
 ---
 
 ## Evidence Collected
 
-### Query Count
-
-Application query logging showed:
-
-```text
-Total Queries: 2
-```
-
-No excessive database round-trips were observed.
-
----
-
-### Database Analysis
-
-Query execution plan:
-
-```text
-Bitmap Index Scan
-Bitmap Heap Scan
-```
-
-The database was successfully using the composite index created in Scenario 02.
-
-Database execution times remained low.
-
----
-
-### API Benchmark Results
-
-#### Postman
+### Postman Benchmark
 
 | Metric        | Value    |
 | ------------- | -------- |
 | Response Time | 1.16 sec |
 | Payload Size  | 16.67 MB |
 
-#### JMeter
+### JMeter Benchmark
 
 | Metric                | Value        |
 | --------------------- | ------------ |
 | Average Response Time | 5260.02 ms   |
 | Throughput            | 0.72 req/sec |
-| Maximum Response Time | 13392 ms     |
-
----
-
-### Network Analysis
-
-JMeter throughput reports showed significant outbound traffic.
-
-Observed:
-
-```text
-Received: ~12 MB/sec
-```
-
-The API was transferring a large JSON response for every request.
-
----
-
-### Dataset Analysis
-
-Current dataset:
-
-```text
-Tenants: 10
-Contracts Per Tenant: 100,000
-Total Contracts: 1,000,000
-```
-
-The endpoint returned all contracts for a tenant in a single response.
 
 ---
 
 ## Findings
 
-The database layer was functioning correctly.
+Database query count was already optimized.
 
-The endpoint generated a response containing approximately:
+Indexes were present and actively used.
 
-```text
-100,000 contracts
-16.67 MB JSON payload
+Query execution remained efficient.
+
+The primary bottleneck was the volume of data returned by the endpoint.
+
+The API returned approximately 100,000 contracts in a single response, generating a payload exceeding 16 MB.
+
+---
+
+## Optimization Investigation
+
+Two pagination approaches were evaluated:
+
+### Offset Pagination
+
+```http
+GET /contracts?page=1&pageSize=50
 ```
 
-Large payload generation introduced:
+Implemented using:
 
-* Increased memory usage
-* JSON serialization overhead
-* Network transfer delays
-* Client-side parsing overhead
+```ts
+skip;
+take;
+```
+
+### Cursor Pagination
+
+```http
+GET /contracts/cursor?cursor=<id>&limit=50
+```
+
+Implemented using:
+
+```ts
+cursor;
+take;
+```
+
+---
+
+## Final Findings
+
+Offset pagination dramatically reduced payload size and response time.
+
+Cursor pagination provided similar response times while maintaining stable query execution characteristics as navigation depth increased.
 
 ---
 
 ## Conclusion
 
-The primary bottleneck was not query execution.
+The root cause was excessive payload generation caused by returning the complete dataset in a single request.
 
-The endpoint returned an excessive amount of data in a single response, causing application-layer and network-layer performance degradation.
+Pagination eliminated the application-layer bottleneck and significantly improved overall API responsiveness.

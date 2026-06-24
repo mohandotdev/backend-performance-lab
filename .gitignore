@@ -148,3 +148,5 @@ generated
 # ApacheJMeter
 before-optimization-html-report
 after-optimization-html-report
+after-offset-pagination-html-report
+after-cursor-pagination-html-report

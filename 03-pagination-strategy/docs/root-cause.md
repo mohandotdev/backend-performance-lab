@@ -2,28 +2,25 @@
 
 ## Problem Statement
 
-The contract listing endpoint became increasingly slow as tenant data volume grew.
+The contract listing endpoint returned all available contracts for a tenant in a single response.
 
 ---
 
-## Existing Query
+## Original Implementation
 
 ```ts
 await prisma.contract.findMany({
   where: {
     tenantId
-  },
-  orderBy: {
-    createdAt: "desc"
   }
 });
 ```
 
-No pagination was applied.
+No pagination mechanism existed.
 
 ---
 
-## Why The Query Became Expensive
+## Impact
 
 For a tenant containing:
 
@@ -31,114 +28,91 @@ For a tenant containing:
 100,000 contracts
 ```
 
-the application performed the following steps:
+the application performed:
 
 ```text
 Database
 ↓
-Return 100,000 rows
+100,000 rows returned
 
 Prisma
 ↓
-Create JavaScript objects
+Object creation
 
 Node.js
 ↓
-Serialize large JSON payload
+JSON serialization
 
 Network
 ↓
-Transfer 16.67 MB response
+16.67 MB transfer
 
-Browser
+Client
 ↓
-Parse JSON
+JSON parsing
 ```
 
-Although database execution remained efficient, the amount of data returned became the dominant cost.
+---
+
+## Why The API Became Slow
+
+The database was not the bottleneck.
+
+The primary cost came from:
+
+* Large payload generation
+* JSON serialization
+* Network transfer
+* Client-side parsing
 
 ---
 
-## Impact
+## Offset Pagination Solution
 
-### Server Side
-
-* Increased memory consumption
-* Increased serialization time
-* Longer request processing
-
-### Network
-
-* Large response payloads
-* Reduced throughput
-* Higher bandwidth consumption
-
-### Client Side
-
-* Slower page rendering
-* Increased JSON parsing time
-
----
-
-## Why Previous Optimizations Did Not Help
-
-### N+1 Query Optimization
-
-Scenario 01 reduced:
-
-```text
-3001 queries
-↓
-2 queries
-```
-
-This solved excessive database round-trips.
-
----
-
-### Index Optimization
-
-Scenario 02 improved:
-
-```text
-Sequential Scan
-↓
-Bitmap Index Scan
-```
-
-This improved database access efficiency.
-
----
-
-However, neither optimization reduced the amount of data being returned.
-
-The endpoint still attempted to return the complete dataset.
-
----
-
-## Root Cause
-
-The endpoint lacked a pagination strategy.
-
-Returning all records in a single response caused the application and network layers to become the primary performance bottlenecks.
-
----
-
-## Recommended Solution
-
-Implement pagination.
-
-Initial approach:
+Implemented:
 
 ```ts
 skip
 take
 ```
 
-Future optimization:
+Benefits:
+
+* Reduced payload size
+* Reduced serialization cost
+* Reduced network usage
+
+Limitation:
+
+As page depth increases, the database must scan and discard more rows.
+
+---
+
+## Cursor Pagination Solution
+
+Implemented:
 
 ```ts
-cursor-based pagination
+cursor
+take
 ```
 
-to avoid large OFFSET costs at scale.
+Benefits:
+
+* Consistent navigation performance
+* Avoids large OFFSET scans
+* Better scalability for large datasets
+
+---
+
+## Root Cause
+
+The endpoint lacked an appropriate pagination strategy and attempted to return the complete dataset in a single response.
+
+---
+
+## Recommended Approach
+
+Use pagination for all large collection endpoints.
+
+Prefer cursor pagination for APIs expected to handle deep navigation or very large datasets.
