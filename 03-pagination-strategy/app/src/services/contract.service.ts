@@ -100,7 +100,9 @@ export const getContractsCursor = async (
     take: limit,
   });
 
-  console.timeEnd("[Server] Get All Contracts - contracts-api");
+  console.timeEnd(
+    "[Server] Get All Contracts by cursor pagination strategy - contracts-api",
+  );
 
   return contracts.map((contract) => ({
     id: contract.id,
