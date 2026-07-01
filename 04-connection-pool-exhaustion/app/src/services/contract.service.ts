@@ -114,3 +114,9 @@ export const getContractsCursor = async (
     createdAt: contract.createdAt,
   }));
 };
+
+export const approveContract = async (id: number) => {
+  return {
+    status: "approved",
+  };
+};

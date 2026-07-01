@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import {
   getAllContracts,
   getContractsCursor,
+  approveContract,
 } from "../services/contract.service";
 
 export const getContracts = async (req: Request, res: Response) => {
@@ -49,5 +50,28 @@ export const getContractsCursorController = async (
     });
   } catch (error) {
     console.error(error);
+  }
+};
+
+export const contractApprovalController = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const contractId = Number(req.params.id);
+
+    const response = await approveContract(contractId);
+
+    return res.status(200).json({
+      success: true,
+      data: response,
+    });
+  } catch (error) {
+    console.error(error);
+
+    return res.status(500).json({
+      success: false,
+      message: "Internal Server Error!",
+    });
   }
 };
