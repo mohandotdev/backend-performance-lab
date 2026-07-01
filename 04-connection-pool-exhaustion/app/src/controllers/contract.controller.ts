@@ -2,7 +2,6 @@ import { Request, Response } from "express";
 import {
   getAllContracts,
   getContractsCursor,
-  getStats,
 } from "../services/contract.service";
 
 export const getContracts = async (req: Request, res: Response) => {
@@ -50,23 +49,5 @@ export const getContractsCursorController = async (
     });
   } catch (error) {
     console.error(error);
-  }
-};
-
-export const getDashboardStats = async (req: Request, res: Response) => {
-  try {
-    const overallStats = await getStats();
-
-    return res.status(200).json({
-      success: true,
-      data: overallStats,
-    });
-  } catch (error) {
-    console.error(error);
-
-    return res.status(500).json({
-      success: false,
-      message: "Internal Server Error",
-    });
   }
 };

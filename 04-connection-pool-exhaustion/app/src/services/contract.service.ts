@@ -114,17 +114,3 @@ export const getContractsCursor = async (
     createdAt: contract.createdAt,
   }));
 };
-
-export const getStats = async () => {
-  const contractsCount = await prisma.contract.count();
-  const approvalCount = await prisma.approval.count();
-  const commentCount = await prisma.comment.count();
-  const userCount = await prisma.user.count();
-
-  return {
-    contracts: contractsCount,
-    approvals: approvalCount,
-    comments: commentCount,
-    users: userCount,
-  };
-};
