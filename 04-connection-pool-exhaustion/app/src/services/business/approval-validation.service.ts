@@ -1,4 +1,4 @@
-export const validateApprovalRules = async () => {
+export const validateApprovalRules = async (contract: any) => {
   console.log("Validating Rules...");
 
   await new Promise((resolve) => setTimeout(resolve, 800));

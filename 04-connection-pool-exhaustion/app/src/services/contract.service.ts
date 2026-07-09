@@ -1,5 +1,11 @@
 import { prisma } from "../lib/prisma";
 import { resetQueryCount, getQueryCount } from "../utils/metrics";
+import { validateApprovalRules } from "./business/approval-validation.service";
+import { metadataExtractor } from "./business/metadata-extractor.service";
+import { sendApprovalEmail } from "./external/email.service";
+import { notifyDashboard } from "./external/notification.service";
+import { generateContractPdf } from "./external/pdf.service";
+import { notifyExternalERP } from "./external/webhook.service";
 
 export const getAllContracts = async (
   tenantId: number,
@@ -115,7 +121,54 @@ export const getContractsCursor = async (
   }));
 };
 
-export const approveContract = async (id: number) => {
+export const approveContract = async (id: number, userId: number) => {
+  await prisma.$transaction(async (tx) => {
+    // 1. Read Contract
+    const contract = tx.contract.findUnique({
+      where: { id },
+    });
+
+    if (!contract) {
+      throw new Error("Contract not found!");
+    }
+
+    // 2. Business validation
+    await validateApprovalRules(contract);
+
+    // 3. Insert approval
+    await tx.approval.create({
+      data: {
+        contractId: id,
+        approverId: userId,
+        status: "APPROVED",
+      },
+    });
+
+    // 4. Update contract
+    await tx.contract.update({
+      where: { id },
+      data: {
+        status: "APPROVED",
+      },
+    });
+
+    // 5. Audit log
+    await tx.auditLog.create({
+      data: {
+        action: "CONTRACT_APPROVED",
+        entityId: id,
+        entityType: "Contract",
+        performedBy: userId,
+      },
+    });
+
+    await generateContractPdf(contract);
+    await metadataExtractor(contract);
+    await sendApprovalEmail(contract);
+    await notifyDashboard(contract);
+    await notifyExternalERP(contract);
+  });
+
   return {
     status: "approved",
   };

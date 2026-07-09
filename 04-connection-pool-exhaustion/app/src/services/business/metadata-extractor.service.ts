@@ -1,4 +1,4 @@
-export const metadataExtractor = async () => {
+export const metadataExtractor = async (contract: any) => {
   console.log("Metadata Extraction Started...");
 
   await new Promise((resolve) => setTimeout(resolve, 1000));

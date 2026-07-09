@@ -59,8 +59,9 @@ export const contractApprovalController = async (
 ) => {
   try {
     const contractId = Number(req.params.id);
+    const userId = Number(req.params.userId);
 
-    const response = await approveContract(contractId);
+    const response = await approveContract(contractId, userId);
 
     return res.status(200).json({
       success: true,
