@@ -75,3 +75,12 @@ model Comment {
 
   createdAt    DateTime  @default(now())
 }
+
+model AuditLog {
+  id         Int      @id @default(autoincrement())
+  entityId   Int
+  entityType String
+  action     String
+  performedBy Int
+  createdAt  DateTime @default(now())
+}
