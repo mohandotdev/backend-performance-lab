@@ -1,7 +1,7 @@
 import { prisma } from "../lib/prisma";
 import { resetQueryCount, getQueryCount } from "../utils/metrics";
 import { validateApprovalRules } from "./business/approval-validation.service";
-import { metadataExtractor } from "./business/metadata-extractor.service";
+import { extractContractMetadata } from "./business/metadata-extractor.service";
 import { sendApprovalEmail } from "./external/email.service";
 import { notifyDashboard } from "./external/notification.service";
 import { generateContractPdf } from "./external/pdf.service";
@@ -163,7 +163,7 @@ export const approveContract = async (id: number, userId: number) => {
     });
 
     await generateContractPdf(contract);
-    await metadataExtractor(contract);
+    await extractContractMetadata(contract);
     await sendApprovalEmail(contract);
     await notifyDashboard(contract);
     await notifyExternalERP(contract);

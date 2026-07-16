@@ -1,4 +1,4 @@
-import {prisma} from "../../src/lib/prisma";
+import { prisma } from "../../src/lib/prisma";
 import { faker } from "@faker-js/faker";
 
 const TENANTS = 10;
@@ -38,7 +38,7 @@ async function main() {
         tenantId: tenant.id,
         name: faker.person.fullName(),
         email: `tenant${tenant.id}_user${userIndex}@lab.com`,
-      })
+      }),
     );
 
     await prisma.user.createMany({
@@ -58,21 +58,15 @@ async function main() {
     // CONTRACTS
     // --------------------------------------------------
 
-    for(let offset = 0; offset < CONTRACTS_PER_TENANT; offset+=BATCH_SIZE){
+    for (let offset = 0; offset < CONTRACTS_PER_TENANT; offset += BATCH_SIZE) {
       const contractsData = Array.from(
         { length: Math.min(BATCH_SIZE, CONTRACTS_PER_TENANT - offset) },
         () => ({
           tenantId: tenant.id,
-          createdById:
-            users[Math.floor(Math.random() * users.length)].id,
+          createdById: users[Math.floor(Math.random() * users.length)].id,
           name: faker.company.name() + " Agreement",
-          status: faker.helpers.arrayElement([
-            "DRAFT",
-            "PENDING",
-            "APPROVED",
-            "REJECTED",
-          ]),
-        })
+          status: "PENDING",
+        }),
       );
 
       await prisma.contract.createMany({
@@ -80,7 +74,7 @@ async function main() {
       });
 
       console.log(
-        `Tenant ${tenant.id}: ${offset + contractsData.length}/${CONTRACTS_PER_TENANT}`
+        `Tenant ${tenant.id}: ${offset + contractsData.length}/${CONTRACTS_PER_TENANT}`,
       );
     }
 
