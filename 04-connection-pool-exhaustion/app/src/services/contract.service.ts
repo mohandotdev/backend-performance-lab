@@ -124,12 +124,16 @@ export const getContractsCursor = async (
 export const approveContract = async (id: number, userId: number) => {
   await prisma.$transaction(async (tx) => {
     // 1. Read Contract
-    const contract = tx.contract.findUnique({
+    const contract = await tx.contract.findUnique({
       where: { id },
     });
 
     if (!contract) {
       throw new Error("Contract not found!");
+    }
+
+    if (contract.status != "PENDING") {
+      throw new Error("Only pending contracts can be approved");
     }
 
     // 2. Business validation
