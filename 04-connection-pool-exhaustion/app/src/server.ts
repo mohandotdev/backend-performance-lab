@@ -1,4 +1,3 @@
-import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import contractRouter from "./routes/contract.route";
@@ -11,6 +10,6 @@ app.use(cors());
 
 app.use("/contracts", contractRouter);
 
-app.listen(PORT, ()=>{
-    console.log(`[server]: Server is running at: http://localhost:${PORT}`);
-})
+app.listen(PORT, () => {
+  console.log(`[server]: Server is running at: http://localhost:${PORT}`);
+});

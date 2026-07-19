@@ -59,7 +59,7 @@ export const contractApprovalController = async (
 ) => {
   try {
     const contractId = Number(req.params.id);
-    const userId = Number(req.params.userId);
+    const userId = Number(req.body.userId);
 
     const response = await approveContract(contractId, userId);
 
